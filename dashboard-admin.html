@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador - Sistema CRM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard-admin.html">
+                <i class="bi bi-shield-check"></i> Sistema CRM - Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="navbar-text text-white me-3">
+                            <i class="bi bi-person-badge"></i> <span id="nombreAdmin">Administrador</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="btnCerrarSesion">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="list-group">
+                    <a href="dashboard-admin.html" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a href="todos-incidentes.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-list-task"></i> Todos los Incidentes
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="bi bi-people"></i> Clientes
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="bi bi-bar-chart"></i> Reportes
+                    </a>
+                   <a href="crear-admin.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-person-plus-fill"></i> Crear Administrador
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="bi bi-gear"></i> Configuración
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <h2 class="mb-4">Panel de Administración</h2>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-white bg-primary">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Total Incidentes</h6>
+                                        <h2 class="mb-0" id="totalIncidentes">0</h2>
+                                    </div>
+                                    <i class="bi bi-ticket-detailed" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card text-white bg-warning">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Pendientes</h6>
+                                        <h2 class="mb-0" id="totalPendientes">0</h2>
+                                    </div>
+                                    <i class="bi bi-clock-history" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card text-white bg-info">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">En Progreso</h6>
+                                        <h2 class="mb-0" id="totalEnProgreso">0</h2>
+                                    </div>
+                                    <i class="bi bi-gear-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card text-white bg-danger">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Críticos</h6>
+                                        <h2 class="mb-0" id="totalCriticos">0</h2>
+                                    </div>
+                                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> Incidentes Críticos</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="incidentesCriticos">
+                                    <div class="text-center py-4">
+                                        <i class="bi bi-check-circle" style="font-size: 3rem; color: #28a745;"></i>
+                                        <p class="text-muted mt-2">No hay incidentes críticos</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="mb-0"><i class="bi bi-clock"></i> Actividad Reciente</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="actividadReciente">
+                                    <div class="text-center py-4">
+                                        <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                                        <p class="text-muted mt-2">No hay actividad reciente</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Distribución por Categoría</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="p-3">
+                                    <i class="bi bi-tools text-primary" style="font-size: 2rem;"></i>
+                                    <h4 class="mt-2" id="catTecnico">0</h4>
+                                    <small class="text-muted">Técnico</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3">
+                                    <i class="bi bi-receipt text-success" style="font-size: 2rem;"></i>
+                                    <h4 class="mt-2" id="catFacturacion">0</h4>
+                                    <small class="text-muted">Facturación</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3">
+                                    <i class="bi bi-question-circle text-info" style="font-size: 2rem;"></i>
+                                    <h4 class="mt-2" id="catConsulta">0</h4>
+                                    <small class="text-muted">Consulta</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3">
+                                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                                    <h4 class="mt-2" id="catReclamo">0</h4>
+                                    <small class="text-muted">Reclamo</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/incidentes.js"></script>
+</body>
+</html>

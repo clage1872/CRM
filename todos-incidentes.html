@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todos los Incidentes - Sistema CRM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard-admin.html">
+                <i class="bi bi-shield-check"></i> Sistema CRM - Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="navbar-text text-white me-3">
+                            <i class="bi bi-person-badge"></i> <span id="nombreAdmin">Administrador</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="btnCerrarSesion">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="list-group">
+                    <a href="dashboard-admin.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a href="todos-incidentes.html" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-list-task"></i> Todos los Incidentes
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="bi bi-people"></i> Clientes
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="bi bi-bar-chart"></i> Reportes
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="bi bi-gear"></i> Configuración
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h4 class="mb-0"><i class="bi bi-list-task"></i> Gestión de Incidentes</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="filtroEstado" class="form-label">Estado</label>
+                                <select class="form-select" id="filtroEstado">
+                                    <option value="">Todos</option>
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="En Progreso">En Progreso</option>
+                                    <option value="En Espera">En Espera</option>
+                                    <option value="Resuelto">Resuelto</option>
+                                    <option value="Cerrado">Cerrado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filtroCategoria" class="form-label">Categoría</label>
+                                <select class="form-select" id="filtroCategoria">
+                                    <option value="">Todas</option>
+                                    <option value="Técnico">Técnico</option>
+                                    <option value="Facturación">Facturación</option>
+                                    <option value="Consulta General">Consulta General</option>
+                                    <option value="Reclamo">Reclamo</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filtroPrioridad" class="form-label">Prioridad</label>
+                                <select class="form-select" id="filtroPrioridad">
+                                    <option value="">Todas</option>
+                                    <option value="Baja">Baja</option>
+                                    <option value="Media">Media</option>
+                                    <option value="Alta">Alta</option>
+                                    <option value="Crítica">Crítica</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="buscarIncidente" class="form-label">Buscar</label>
+                                <input type="text" class="form-control" id="buscarIncidente" placeholder="Buscar...">
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Cliente</th>
+                                        <th>Título</th>
+                                        <th>Categoría</th>
+                                        <th>Prioridad</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaIncidentes">
+                                    <tr>
+                                        <td colspan="8" class="text-center py-5">
+                                            <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                                            <p class="text-muted mt-3">No hay incidentes registrados</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <nav>
+                            <ul class="pagination justify-content-center" id="paginacion">
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalGestionIncidente" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="bi bi-gear"></i> Gestionar Incidente</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Número de Caso:</strong>
+                            <p id="gestionCaso"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Cliente:</strong>
+                            <p id="gestionCliente"></p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <form id="formGestionIncidente">
+                        <div class="mb-3">
+                            <label for="cambiarEstado" class="form-label">Cambiar Estado</label>
+                            <select class="form-select" id="cambiarEstado" name="estado" required>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En Progreso">En Progreso</option>
+                                <option value="En Espera">En Espera</option>
+                                <option value="Resuelto">Resuelto</option>
+                                <option value="Cerrado">Cerrado</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="asignarResponsable" class="form-label">Asignar Responsable</label>
+                            <input type="text" class="form-control" id="asignarResponsable" name="responsable" placeholder="Nombre del técnico o área">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="comentarioAdmin" class="form-label">Comentario / Nota de Seguimiento</label>
+                            <textarea class="form-control" id="comentarioAdmin" name="comentario" rows="4" placeholder="Agregue notas, comentarios o actualizaciones..."></textarea>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Nota:</strong> Los cambios quedarán registrados en el historial del incidente.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btnGuardarCambios">
+                        <i class="bi bi-check-circle"></i> Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDetalleIncidente" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="bi bi-eye"></i> Detalle del Incidente</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Número de Caso:</strong>
+                            <p id="detalleCaso"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Cliente:</strong>
+                            <p id="detalleCliente"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Estado:</strong>
+                            <p id="detalleEstado"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Categoría:</strong>
+                            <p id="detalleCategoria"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Prioridad:</strong>
+                            <p id="detallePrioridad"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Responsable:</strong>
+                            <p id="detalleResponsable"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Fecha de Apertura:</strong>
+                            <p id="detalleFechaApertura"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Fecha de Cierre:</strong>
+                            <p id="detalleFechaCierre"></p>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong>Título:</strong>
+                            <p id="detalleTitulo"></p>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong>Descripción:</strong>
+                            <p id="detalleDescripcion"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="btnEditarIncidente">
+                        <i class="bi bi-pencil"></i> Editar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/incidentes.js"></script>
+</body>
+</html>
