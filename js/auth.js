@@ -85,14 +85,13 @@ async function procesarLogin() {
         
         if (data.success) {
             guardarSesion(data.usuario, data.token, recordarme);
-            redirigirSegunRol(data.usuario.rol);
+            redirigirSegunRol(data.usuario);
         } else {
             mostrarError(data.message || 'CUIT o contraseña incorrectos');
             document.getElementById('password').value = '';
         }
         
     } catch (error) {
-        console.error('Error en login:', error);
         mostrarError('Error de conexión con el servidor');
     }
 }
@@ -181,14 +180,21 @@ function cargarDatosUsuario() {
         nombreAdmin.textContent = `${usuario.nombre} ${usuario.apellido}`;
     }
 }
+function redirigirSegunRol(usuario) {
+    const rol = usuario.rol || 'cliente';
 
-function redirigirSegunRol(rol) {
-    if (rol === 'admin') {
-        window.location.href = 'dashboard-admin.html';
-    } else if (rol === 'cliente') {
-        window.location.href = 'dashboard-cliente.html';
-    } else {
-        mostrarError('Rol de usuario no reconocido');
+    switch(rol) {
+        case 'admin':
+            window.location.href = 'dashboard-admin.html';
+            break;
+        case 'tecnico':
+            window.location.href = 'dashboard-tecnico.html';
+            break;
+        case 'cliente':
+            window.location.href = 'dashboard-cliente.html';
+            break;
+        default:
+            window.location.href = 'dashboard-cliente.html';
     }
 }
 

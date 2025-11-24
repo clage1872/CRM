@@ -82,6 +82,63 @@ async function login(req, res) {
     }
     
     try {
+        // PRIMERO buscar en administradores (tiene prioridad)
+        const [admins] = await pool.query(
+            'SELECT id, nombre, apellido, email, cuit, password, rol, activo FROM administradores WHERE cuit = ?',
+            [cuit]
+        );
+        
+        if (admins.length > 0) {
+            const admin = admins[0];
+            
+                console.log('========= LOGIN ADMIN/TECNICO =========');
+    console.log('CUIT:', cuit);
+    console.log('Usuario encontrado:', admin.nombre, admin.apellido);
+    console.log('Rol:', admin.rol);
+    console.log('=====================================');
+    
+            if (!admin.activo) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Usuario inactivo. Contacte al administrador.' 
+                });
+            }
+            
+            const passwordValido = await bcrypt.compare(password, admin.password);
+            
+            if (!passwordValido) {
+                return res.status(401).json({ 
+                    success: false, 
+                    message: 'CUIT o contraseña incorrectos' 
+                });
+            }
+            
+            const token = jwt.sign(
+                { 
+                    id: admin.id, 
+                    cuit: admin.cuit, 
+                    rol: admin.rol,
+                    tipo: 'administrador'
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: process.env.JWT_EXPIRES_IN }
+            );
+            
+            return res.json({
+                success: true,
+                message: 'Login exitoso',
+                token,
+                usuario: {
+                    id: admin.id,
+                    nombre: admin.nombre,
+                    apellido: admin.apellido,
+                    email: admin.email,
+                    cuit: admin.cuit,
+                    rol: admin.rol
+                }
+            });
+        }
+        
         const [clientes] = await pool.query(
             'SELECT id, nombre, apellido, email, cuit, password, activo FROM clientes WHERE cuit = ?',
             [cuit]
@@ -128,56 +185,6 @@ async function login(req, res) {
                     email: cliente.email,
                     cuit: cliente.cuit,
                     rol: 'cliente'
-                }
-            });
-        }
-        
-        const [admins] = await pool.query(
-            'SELECT id, nombre, apellido, email, cuit, password, rol, activo FROM administradores WHERE cuit = ?',
-            [cuit]
-        );
-        
-        if (admins.length > 0) {
-            const admin = admins[0];
-            
-            if (!admin.activo) {
-                return res.status(403).json({ 
-                    success: false, 
-                    message: 'Usuario inactivo. Contacte al administrador.' 
-                });
-            }
-            
-            const passwordValido = await bcrypt.compare(password, admin.password);
-            
-            if (!passwordValido) {
-                return res.status(401).json({ 
-                    success: false, 
-                    message: 'CUIT o contraseña incorrectos' 
-                });
-            }
-            
-            const token = jwt.sign(
-                { 
-                    id: admin.id, 
-                    cuit: admin.cuit, 
-                    rol: admin.rol,
-                    tipo: 'administrador'
-                },
-                process.env.JWT_SECRET,
-                { expiresIn: process.env.JWT_EXPIRES_IN }
-            );
-            
-            return res.json({
-                success: true,
-                message: 'Login exitoso',
-                token,
-                usuario: {
-                    id: admin.id,
-                    nombre: admin.nombre,
-                    apellido: admin.apellido,
-                    email: admin.email,
-                    cuit: admin.cuit,
-                    rol: admin.rol
                 }
             });
         }
@@ -244,7 +251,14 @@ async function registrarAdministrador(req, res) {
         }
         
         const passwordHash = await bcrypt.hash(password, 10);
-        const rolFinal = rol || 'admin';
+        if (rol && rol !== 'admin' && rol !== 'tecnico') {
+            return res.status(400).json({ 
+        success: false, 
+        message: 'El rol debe ser "admin" o "tecnico"' 
+        });   
+    }
+
+        const rolFinal = rol || 'admin'; 
         
         const [resultado] = await pool.query(
             'INSERT INTO administradores (nombre, apellido, email, cuit, password, rol) VALUES (?, ?, ?, ?, ?, ?)',
@@ -266,4 +280,124 @@ async function registrarAdministrador(req, res) {
     }
 }
 
-module.exports = { registrarCliente, login, registrarAdministrador };
+async function obtenerUsuariosParaAsignar(req, res) {
+    try {
+        const [usuarios] = await pool.query(
+            `SELECT id, nombre, apellido, email, cuit, rol, activo 
+             FROM administradores 
+             WHERE activo = 1 AND (rol = 'admin' OR rol = 'tecnico')
+             ORDER BY nombre, apellido`
+        );
+        
+        res.json({
+            success: true,
+            usuarios
+        });
+        
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al obtener usuarios' 
+        });
+    }
+}
+
+async function obtenerClientes(req, res) {
+    try {
+        const [clientes] = await pool.query(
+            `SELECT id, nombre, apellido, email, cuit, activo, fecha_registro 
+             FROM clientes 
+             WHERE activo = 1 
+             ORDER BY nombre, apellido`
+        );
+        
+        res.json({
+            success: true,
+            clientes
+        });
+        
+    } catch (error) {
+        console.error('Error al obtener clientes:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al obtener clientes' 
+        });
+    }
+}
+
+async function asignarRolACliente(req, res) {
+    const { clienteId, rol } = req.body;
+    
+    if (!clienteId || !rol) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Cliente y rol son obligatorios' 
+        });
+    }
+    
+    if (rol !== 'admin' && rol !== 'tecnico') {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'El rol debe ser "admin" o "tecnico"' 
+        });
+    }
+    
+    try {
+        // Obtener datos del cliente
+        const [cliente] = await pool.query(
+            'SELECT * FROM clientes WHERE id = ?',
+            [clienteId]
+        );
+        
+        if (cliente.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Cliente no encontrado' 
+            });
+        }
+        
+        const clienteData = cliente[0];
+        
+        // Verificar si ya existe en administradores
+        const [existeAdmin] = await pool.query(
+            'SELECT id FROM administradores WHERE cuit = ?',
+            [clienteData.cuit]
+        );
+        
+        if (existeAdmin.length > 0) {
+            // Actualizar rol
+            await pool.query(
+                'UPDATE administradores SET rol = ? WHERE cuit = ?',
+                [rol, clienteData.cuit]
+            );
+        } else {
+            // Insertar en administradores
+            await pool.query(
+                'INSERT INTO administradores (nombre, apellido, email, cuit, password, rol) VALUES (?, ?, ?, ?, ?, ?)',
+                [clienteData.nombre, clienteData.apellido, clienteData.email, clienteData.cuit, clienteData.password, rol]
+            );
+        }
+        
+        res.json({
+            success: true,
+            message: `Rol de ${rol} asignado exitosamente a ${clienteData.nombre} ${clienteData.apellido}`
+        });
+        
+    } catch (error) {
+        console.error('Error al asignar rol:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al asignar el rol' 
+        });
+    }
+}
+
+module.exports = { 
+    registrarCliente, 
+    login, 
+    registrarAdministrador,
+    obtenerUsuariosParaAsignar,
+    obtenerClientes,
+    asignarRolACliente
+};

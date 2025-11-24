@@ -216,7 +216,8 @@ async function obtenerIncidentePorId(req, res) {
 async function actualizarIncidente(req, res) {
     const { id } = req.params;
     const { estado, responsable_id, comentario } = req.body;
-    const adminId = req.usuario.id;
+    const usuarioId = req.usuario.id;
+    const usuarioRol = req.usuario.rol;
     
     try {
         const [incidente] = await pool.query('SELECT * FROM incidentes WHERE id = ?', [id]);
@@ -225,6 +226,14 @@ async function actualizarIncidente(req, res) {
             return res.status(404).json({ 
                 success: false, 
                 message: 'Incidente no encontrado' 
+            });
+        }
+        
+        // solo admin puede marcar como "Resuelto"
+        if (estado === 'Resuelto' && usuarioRol !== 'admin') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Solo los administradores pueden resolver incidentes' 
             });
         }
         
@@ -249,7 +258,7 @@ async function actualizarIncidente(req, res) {
             }
         }
         
-        if (responsable_id !== undefined) {
+        if (responsable_id !== undefined && usuarioRol === 'admin') {
             updates.push('responsable_id = ?');
             values.push(responsable_id || null);
         }
@@ -261,9 +270,10 @@ async function actualizarIncidente(req, res) {
         }
         
         if (comentario) {
+            const tipoUsuario = usuarioRol === 'admin' ? 'administrador' : 'administrador';
             await pool.query(
                 'INSERT INTO comentarios (incidente_id, usuario_id, tipo_usuario, comentario) VALUES (?, ?, ?, ?)',
-                [id, adminId, 'administrador', comentario]
+                [id, usuarioId, tipoUsuario, comentario]
             );
         }
         
@@ -315,11 +325,53 @@ async function obtenerEstadisticas(req, res) {
     }
 }
 
+async function obtenerIncidentesTecnico(req, res) {
+    const tecnicoId = req.usuario.id;
+    
+    try {
+        const [incidentes] = await pool.query(
+            `SELECT 
+                i.id,
+                i.numero_caso,
+                i.titulo,
+                i.descripcion,
+                i.categoria,
+                i.prioridad,
+                e.nombre AS estado,
+                e.codigo AS estado_codigo,
+                CONCAT(c.nombre, ' ', c.apellido) AS cliente_nombre,
+                c.email AS cliente_email,
+                c.cuit AS cliente_cuit,
+                i.fecha_apertura,
+                i.fecha_cierre
+            FROM incidentes i
+            INNER JOIN estados e ON i.estado_id = e.id
+            INNER JOIN clientes c ON i.cliente_id = c.id
+            WHERE i.responsable_id = ?
+            ORDER BY i.fecha_apertura DESC`,
+            [tecnicoId]
+        );
+        
+        res.json({
+            success: true,
+            incidentes
+        });
+        
+    } catch (error) {
+        console.error('Error al obtener incidentes del técnico:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al obtener los incidentes' 
+        });
+    }
+}
+
 module.exports = {
     crearIncidente,
     obtenerMisIncidentes,
     obtenerTodosIncidentes,
     obtenerIncidentePorId,
     actualizarIncidente,
-    obtenerEstadisticas
+    obtenerEstadisticas,
+    obtenerIncidentesTecnico
 };

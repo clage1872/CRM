@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - Sistema CRM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard-admin.html">
+                <i class="bi bi-shield-check"></i> Sistema CRM - Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="navbar-text text-white me-3">
+                            <i class="bi bi-person-badge"></i> <span id="nombreAdmin">Administrador</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="btnCerrarSesion">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="list-group">
+                    <a href="dashboard-admin.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a href="gestion-incidentes.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-list-task"></i> Gestión de Incidentes
+                    </a>
+                    <a href="reportes.html" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-file-earmark-bar-graph"></i> Reportes
+                    </a>
+                    <a href="asignar-rol.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-person-plus-fill"></i> Asignar Rol
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h4 class="mb-0"><i class="bi bi-file-earmark-bar-graph"></i> Generación de Reportes</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Información:</strong> Seleccione los filtros deseados y genere un reporte en formato PDF de los incidentes.
+                        </div>
+
+                        <form id="formReporte">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="reporteFechaDesde" class="form-label">Fecha Desde</label>
+                                    <input type="date" class="form-control" id="reporteFechaDesde" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="reporteFechaHasta" class="form-label">Fecha Hasta</label>
+                                    <input type="date" class="form-control" id="reporteFechaHasta" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="reporteEstado" class="form-label">Estado</label>
+                                    <select class="form-select" id="reporteEstado">
+                                        <option value="">Todos</option>
+                                        <option value="Pendiente">Pendiente</option>
+                                        <option value="En Progreso">En Progreso</option>
+                                        <option value="En Espera">En Espera</option>
+                                        <option value="Resuelto">Resuelto</option>
+                                        <option value="Cerrado">Cerrado</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="reporteCategoria" class="form-label">Categoría</label>
+                                    <select class="form-select" id="reporteCategoria">
+                                        <option value="">Todas</option>
+                                        <option value="Técnico">Técnico</option>
+                                        <option value="Facturación">Facturación</option>
+                                        <option value="Consulta General">Consulta General</option>
+                                        <option value="Reclamo">Reclamo</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="reportePrioridad" class="form-label">Prioridad</label>
+                                    <select class="form-select" id="reportePrioridad">
+                                        <option value="">Todas</option>
+                                        <option value="Baja">Baja</option>
+                                        <option value="Media">Media</option>
+                                        <option value="Alta">Alta</option>
+                                        <option value="Crítica">Crítica</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <label for="reporteCliente" class="form-label">Cliente</label>
+                                    <select class="form-select" id="reporteCliente">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary btn-lg" id="btnGenerarReporte">
+                                    <i class="bi bi-file-pdf"></i> Generar Reporte PDF
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="btnVistaPrevia">
+                                    <i class="bi bi-eye"></i> Vista Previa
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sección de vista previa -->
+                <div class="card shadow mt-4" id="cardVistaPrevia" style="display: none;">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-eye"></i> Vista Previa del Reporte</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-info-circle"></i>
+                            Se encontraron <strong id="totalIncidentesPreview">0</strong> incidentes con los filtros seleccionados.
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Cliente</th>
+                                        <th>Título</th>
+                                        <th>Categoría</th>
+                                        <th>Prioridad</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaVistaPrevia">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@latest"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let incidentesCargados = [];
+        let clientesUnicos = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const usuario = obtenerUsuarioActivo();
+            
+            if (!usuario || usuario.rol !== 'admin') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            document.getElementById('nombreAdmin').textContent = `${usuario.nombre} ${usuario.apellido}`;
+            
+            const hoy = new Date();
+            const haceUnMes = new Date();
+            haceUnMes.setMonth(haceUnMes.getMonth() - 1);
+            
+            document.getElementById('reporteFechaDesde').valueAsDate = haceUnMes;
+            document.getElementById('reporteFechaHasta').valueAsDate = hoy;
+            
+            cargarIncidentes();
+            
+            document.getElementById('btnGenerarReporte').addEventListener('click', generarReportePDF);
+            document.getElementById('btnVistaPrevia').addEventListener('click', mostrarVistaPrevia);
+        });
+        
+        async function cargarIncidentes() {
+            const usuario = obtenerUsuarioActivo();
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/incidentes/todos', {
+                    headers: {
+                        'Authorization': `Bearer ${usuario.token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.incidentes.length > 0) {
+                    incidentesCargados = data.incidentes;
+                    
+                    clientesUnicos = [...new Set(data.incidentes.map(i => i.cliente_nombre))].sort();
+                    cargarFiltroClientes();
+                }
+                
+            } catch (error) {
+                console.error('Error al cargar incidentes:', error);
+            }
+        }
+        
+        function cargarFiltroClientes() {
+            const filtroCliente = document.getElementById('reporteCliente');
+            
+            clientesUnicos.forEach(cliente => {
+                const option = document.createElement('option');
+                option.value = cliente;
+                option.textContent = cliente;
+                filtroCliente.appendChild(option);
+            });
+        }
+        
+        function obtenerIncidentesFiltrados() {
+        const fechaDesdeStr = document.getElementById('reporteFechaDesde').value; 
+        const fechaHastaStr = document.getElementById('reporteFechaHasta').value; 
+            
+            
+        const [yearDesde, mesDesde, diaDesde] = fechaDesdeStr.split('-').map(Number);
+        const fechaDesde = new Date(yearDesde, mesDesde - 1, diaDesde, 0, 0, 0, 0);
+            
+        const [yearHasta, mesHasta, diaHasta] = fechaHastaStr.split('-').map(Number);
+        const fechaHasta = new Date(yearHasta, mesHasta - 1, diaHasta, 23, 59, 59, 999)
+            
+            const estado = document.getElementById('reporteEstado').value;
+            const categoria = document.getElementById('reporteCategoria').value;
+            const prioridad = document.getElementById('reportePrioridad').value;
+            const cliente = document.getElementById('reporteCliente').value;
+            
+            let incidentesFiltrados = incidentesCargados.filter(i => {
+                const fechaIncidente = new Date(i.fecha_apertura);
+                return fechaIncidente >= fechaDesde && fechaIncidente <= fechaHasta;
+            });
+            
+            if (estado) {
+                incidentesFiltrados = incidentesFiltrados.filter(i => i.estado === estado);
+            }
+            
+            if (categoria) {
+                incidentesFiltrados = incidentesFiltrados.filter(i => i.categoria === categoria);
+            }
+            
+            if (prioridad) {
+                incidentesFiltrados = incidentesFiltrados.filter(i => i.prioridad === prioridad);
+            }
+            
+            if (cliente) {
+                incidentesFiltrados = incidentesFiltrados.filter(i => i.cliente_nombre === cliente);
+            }
+            
+            return incidentesFiltrados;
+        }
+        
+        function mostrarVistaPrevia() {
+            const incidentesFiltrados = obtenerIncidentesFiltrados();
+            
+            document.getElementById('totalIncidentesPreview').textContent = incidentesFiltrados.length;
+            
+            const tbody = document.getElementById('tablaVistaPrevia');
+            
+            if (incidentesFiltrados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">No se encontraron incidentes con los filtros seleccionados</td></tr>';
+            } else {
+                tbody.innerHTML = incidentesFiltrados.map(i => `
+                    <tr>
+                        <td>${i.numero_caso}</td>
+                        <td>${i.cliente_nombre}</td>
+                        <td>${i.titulo}</td>
+                        <td>${i.categoria}</td>
+                        <td><span class="badge bg-${obtenerColorPrioridad(i.prioridad)}">${i.prioridad}</span></td>
+                        <td><span class="badge bg-${obtenerColorEstado(i.estado_codigo)}">${i.estado}</span></td>
+                        <td>${new Date(i.fecha_apertura).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            document.getElementById('cardVistaPrevia').style.display = 'block';
+            document.getElementById('cardVistaPrevia').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function generarReportePDF() {
+            const incidentesFiltrados = obtenerIncidentesFiltrados();
+    
+        if (incidentesFiltrados.length === 0) {
+            alert('No hay incidentes para generar el reporte con los filtros seleccionados');
+        return;
+        }
+    
+        try {
+            // verificar que jsPDF esté cargado
+        if (typeof window.jspdf === 'undefined') {
+            alert('Error: La librería jsPDF no se cargó correctamente. Por favor recargue la página.');
+        return;
+        }
+        
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // titulo
+        doc.setFontSize(18);
+        doc.text('Reporte de Incidentes - Sistema CRM', 14, 20);
+        
+        // info del reporte
+        doc.setFontSize(10);
+        doc.text(`Fecha de generación: ${new Date().toLocaleString()}`, 14, 30);
+        doc.text(`Total de incidentes: ${incidentesFiltrados.length}`, 14, 36);
+        
+        const fechaDesde = document.getElementById('reporteFechaDesde').value;
+        const fechaHasta = document.getElementById('reporteFechaHasta').value;
+        doc.text(`Período: ${new Date(fechaDesde).toLocaleDateString()} - ${new Date(fechaHasta).toLocaleDateString()}`, 14, 42);
+        
+        // tabla generica
+        const tableData = incidentesFiltrados.map(i => [
+            i.numero_caso,
+            i.cliente_nombre,
+            i.titulo.substring(0, 30) + (i.titulo.length > 30 ? '...' : ''),
+            i.categoria,
+            i.prioridad,
+            i.estado,
+            new Date(i.fecha_apertura).toLocaleDateString()
+        ]);
+        
+        doc.autoTable({
+            startY: 50,
+            head: [['Número', 'Cliente', 'Título', 'Categoría', 'Prioridad', 'Estado', 'Fecha']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: { fillColor: [52, 58, 64] },
+            styles: { fontSize: 8 }
+        });
+        
+        // guardar 
+        const nombreArchivo = `reporte_incidentes_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(nombreArchivo);
+        
+        alert('Reporte PDF generado exitosamente');
+        
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        alert('Error al generar el PDF. Detalles en la consola del navegador (F12).');
+    }
+}
+        
+        function obtenerColorPrioridad(prioridad) {
+            const colores = {
+                'Baja': 'secondary',
+                'Media': 'info',
+                'Alta': 'warning',
+                'Crítica': 'danger'
+            };
+            return colores[prioridad] || 'secondary';
+        }
+        
+        function obtenerColorEstado(codigo) {
+            const colores = {
+                'PEND': 'warning',
+                'PROG': 'info',
+                'ESP': 'secondary',
+                'RES': 'success',
+                'CERR': 'dark'
+            };
+            return colores[codigo] || 'secondary';
+        }
+    </script>
+</body>
+</html>

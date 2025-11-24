@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Técnico - Sistema CRM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-info">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard-tecnico.html">
+                <i class="bi bi-tools"></i> Sistema CRM - Técnico
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="navbar-text text-white me-3">
+                            <i class="bi bi-person-badge"></i> <span id="nombreTecnico">Técnico</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="btnCerrarSesion">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="list-group">
+                    <a href="dashboard-tecnico.html" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-speedometer2"></i> Inicio
+                    </a>
+                    <a href="mis-incidentes-tecnico.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-list-task"></i> Mis Incidentes
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div class="mb-4">
+                    <h2><i class="bi bi-speedometer2"></i> Dashboard Técnico</h2>
+                    <p class="text-muted">Bienvenido al sistema de gestión de incidentes</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm border-primary">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Incidentes Asignados</h6>
+                                        <h2 class="mb-0" id="totalAsignados">-</h2>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="bi bi-clipboard-check text-primary" style="font-size: 2rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card shadow-sm border-warning">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">En Progreso</h6>
+                                        <h2 class="mb-0" id="enProgreso">-</h2>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="bi bi-hourglass-split text-warning" style="font-size: 2rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="card shadow">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="bi bi-list-ul"></i> Incidentes Recientes Asignados</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Número</th>
+                                                <th>Título</th>
+                                                <th>Cliente</th>
+                                                <th>Prioridad</th>
+                                                <th>Estado</th>
+                                                <th>Fecha</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tablaIncidentesRecientes">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-4">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Nota:</strong> Solo puedes modificar el estado de los incidentes asignados. Los incidentes solo pueden ser marcados como "Resueltos" por un administrador.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const usuario = obtenerUsuarioActivo();
+            
+            if (!usuario || usuario.rol !== 'tecnico') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            document.getElementById('nombreTecnico').textContent = `${usuario.nombre} ${usuario.apellido}`;
+            
+            await cargarEstadisticas();
+            await cargarIncidentesRecientes();
+        });
+        
+        async function cargarEstadisticas() {
+            const usuario = obtenerUsuarioActivo();
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/incidentes/mis-incidentes-tecnico', {
+                    headers: {
+                        'Authorization': `Bearer ${usuario.token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const incidentes = data.incidentes;
+                    
+                    document.getElementById('totalAsignados').textContent = incidentes.length;
+                    
+                    const enProgreso = incidentes.filter(i => i.estado === 'En Progreso').length;
+                    document.getElementById('enProgreso').textContent = enProgreso;
+                }
+                
+            } catch (error) {
+                console.error('Error al cargar estadísticas:', error);
+            }
+        }
+        
+        async function cargarIncidentesRecientes() {
+            const usuario = obtenerUsuarioActivo();
+            const tbody = document.getElementById('tablaIncidentesRecientes');
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/incidentes/mis-incidentes-tecnico', {
+                    headers: {
+                        'Authorization': `Bearer ${usuario.token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.incidentes.length > 0) {
+                    const incidentesRecientes = data.incidentes.slice(0, 5);
+                    
+                    tbody.innerHTML = incidentesRecientes.map(incidente => `
+                        <tr>
+                            <td><strong>${incidente.numero_caso}</strong></td>
+                            <td>${incidente.titulo}</td>
+                            <td>${incidente.cliente_nombre}</td>
+                            <td><span class="badge bg-${obtenerColorPrioridad(incidente.prioridad)}">${incidente.prioridad}</span></td>
+                            <td><span class="badge bg-${obtenerColorEstado(incidente.estado_codigo)}">${incidente.estado}</span></td>
+                            <td>${new Date(incidente.fecha_apertura).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No tienes incidentes asignados</td></tr>';
+                }
+                
+            } catch (error) {
+                console.error('Error al cargar incidentes:', error);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error al cargar incidentes</td></tr>';
+            }
+        }
+        
+        function obtenerColorPrioridad(prioridad) {
+            const colores = {
+                'Baja': 'secondary',
+                'Media': 'info',
+                'Alta': 'warning',
+                'Crítica': 'danger'
+            };
+            return colores[prioridad] || 'secondary';
+        }
+        
+        function obtenerColorEstado(codigo) {
+            const colores = {
+                'PEND': 'warning',
+                'PROG': 'info',
+                'ESP': 'secondary',
+                'RES': 'success',
+                'CERR': 'dark'
+            };
+            return colores[codigo] || 'secondary';
+        }
+    </script>
+</body>
+</html>
